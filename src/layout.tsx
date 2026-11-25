@@ -27,7 +27,7 @@ export function Marca({ grande }: { grande?: boolean }) {
 
 /** Layout autenticado: menú lateral según el perfil y aceptación de términos vigente. */
 export function Layout() {
-  const { yo, esAdmin, gestor, salir } = useSession()
+  const { yo, esAdmin, gestor, puede, salir } = useSession()
   if (yo === undefined) return <Spinner label="Restaurando sesión…" />
   if (!yo) return <Navigate to="/login" replace />
   if (!yo.legal.aceptada) return <Terminos />
@@ -35,6 +35,8 @@ export function Layout() {
   const menu = [
     { to: '/', icon: 'dashboard', label: 'Inicio', end: true },
     { to: '/archivo', icon: 'folder_open', label: 'Archivo' },
+    ...(puede('AGENDA') ? [{ to: '/agenda', icon: 'calendar_month', label: 'Agenda' }] : []),
+    ...(puede('FINANZAS') ? [{ to: '/finanzas', icon: 'payments', label: 'Finanzas' }] : []),
     ...(gestor
       ? [
           { to: '/empresas', icon: 'apartment', label: 'Empresas' },
@@ -141,4 +143,10 @@ function Terminos() {
 export function SoloGestor({ admin }: { admin?: boolean }) {
   const { esAdmin, gestor } = useSession()
   return (admin ? esAdmin : gestor) ? <Outlet /> : <Navigate to="/" replace />
+}
+
+/** Ruta de un módulo (feature): sin él vuelve al inicio. El backend también lo exige. */
+export function ConModulo({ codigo }: { codigo: string }) {
+  const { puede } = useSession()
+  return puede(codigo) ? <Outlet /> : <Navigate to="/" replace />
 }

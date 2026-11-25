@@ -2,11 +2,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import './index.css'
-import { Layout, SoloGestor } from './layout'
+import { ConModulo, Layout, SoloGestor } from './layout'
+import Agenda from './pages/Agenda'
 import Archivo from './pages/Archivo'
 import ArchivoEmpresa from './pages/ArchivoEmpresa'
 import Clasificaciones from './pages/Clasificaciones'
 import EmpresaDetalle from './pages/EmpresaDetalle'
+import Finanzas from './pages/Finanzas'
 import Empresas from './pages/Empresas'
 import Inicio from './pages/Inicio'
 import Login from './pages/Login'
@@ -26,6 +28,8 @@ const router = createBrowserRouter(
         { path: 'archivo', element: <Archivo /> },
         { path: 'archivo/:empresaId', element: <ArchivoEmpresa /> },
         { path: 'archivo/:empresaId/:tipo/:id', element: <Registro /> },
+        { element: <ConModulo codigo="AGENDA" />, children: [{ path: 'agenda', element: <Agenda /> }] },
+        { element: <ConModulo codigo="FINANZAS" />, children: [{ path: 'finanzas', element: <Finanzas /> }] },
         {
           element: <SoloGestor />,
           children: [

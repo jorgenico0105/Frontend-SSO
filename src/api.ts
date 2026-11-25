@@ -328,6 +328,64 @@ export interface Accidente extends RegistroBase {
   }
 }
 
+/* --------------------------------- Agenda --------------------------------- */
+
+export type TipoActividad = 'auditoria' | 'inspeccion' | 'capacitacion' | 'reunion' | 'visita' | 'informe' | 'otro'
+export type EstadoActividad = 'PENDIENTE' | 'REALIZADA' | 'CANCELADA'
+export type EmpresaRef = { id: number; nombre: string }
+
+export interface Actividad {
+  id: number
+  titulo: string
+  descripcion: string | null
+  tipo: TipoActividad
+  /** YYYY-MM-DD local. */
+  fecha: string
+  /** HH:MM; null = todo el día. */
+  horaInicio: string | null
+  horaFin: string | null
+  lugar: string | null
+  estado: EstadoActividad
+  empresa: EmpresaRef | null
+}
+
+export type ActividadInput = Omit<Actividad, 'id' | 'empresa'> & { empresaId: number | null }
+export type NotaDia = { fecha: string; texto: string }
+
+/* -------------------------------- Finanzas -------------------------------- */
+
+export type TipoMovimiento = 'INGRESO' | 'GASTO'
+export type EstadoMovimiento = 'PENDIENTE' | 'PAGADO'
+export type MetodoPago = 'transferencia' | 'efectivo' | 'cheque' | 'tarjeta' | 'otro'
+
+export interface Movimiento {
+  id: number
+  tipo: TipoMovimiento
+  concepto: string
+  categoria: string
+  monto: number
+  fecha: string
+  fechaVencimiento: string | null
+  estado: EstadoMovimiento
+  fechaPago: string | null
+  metodo: MetodoPago | null
+  referencia: string | null
+  nota: string | null
+  empresa: EmpresaRef | null
+  /** Pendiente con el vencimiento ya pasado (lo calcula el backend). */
+  vencido: boolean
+}
+
+export type MovimientoInput = Omit<Movimiento, 'id' | 'empresa' | 'vencido'> & { empresaId: number | null }
+
+export interface ResumenFinanzas {
+  anio: number
+  totales: { facturado: number; cobrado: number; gastos: number; balance: number; porCobrar: number; vencido: number; pendientes: number }
+  meses: { mes: number; facturado: number; cobrado: number; gastos: number; balance: number }[]
+  empresas: { empresa: EmpresaRef | null; facturado: number; cobrado: number; pendiente: number }[]
+  categorias: { categoria: string; total: number }[]
+}
+
 /* -------------------------------- Llamadas -------------------------------- */
 
 export const api = {
@@ -369,6 +427,18 @@ export const api = {
   matriz: (id: number) => get<Matriz>(`/voz/${id}`),
   permiso: (id: number) => get<Permiso>(`/permisos/${id}`),
   accidente: (id: number) => get<Accidente>(`/accidentes/${id}`),
+
+  agenda: (desde: string, hasta: string) => get<{ actividades: Actividad[]; notas: NotaDia[] }>(`/agenda?desde=${desde}&hasta=${hasta}`),
+  crearActividad: (a: ActividadInput) => post<Actividad>('/agenda/actividades', a),
+  actualizarActividad: (id: number, a: Partial<ActividadInput>) => patch<Actividad>(`/agenda/actividades/${id}`, a),
+  eliminarActividad: (id: number) => del(`/agenda/actividades/${id}`),
+  guardarNota: (fecha: string, texto: string) => request<NotaDia>('PUT', `/agenda/notas/${fecha}`, { texto }),
+
+  movimientos: () => get<Movimiento[]>('/finanzas/movimientos'),
+  resumenFinanzas: (anio: number) => get<ResumenFinanzas>(`/finanzas/resumen?anio=${anio}`),
+  crearMovimiento: (m: MovimientoInput) => post<Movimiento>('/finanzas/movimientos', m),
+  actualizarMovimiento: (id: number, m: Partial<MovimientoInput>) => patch<Movimiento>(`/finanzas/movimientos/${id}`, m),
+  eliminarMovimiento: (id: number) => del(`/finanzas/movimientos/${id}`),
 }
 
 export const nombre = (p: { nombres: string; apellidos: string } | null | undefined) =>

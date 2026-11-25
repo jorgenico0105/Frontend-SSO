@@ -8,6 +8,8 @@ interface Sesion {
   esAdmin: boolean
   /** Administrador general o de empresa: usuarios, áreas y puestos. */
   gestor: boolean
+  /** Si tiene el módulo (feature); el administrador general tiene todos. */
+  puede: (codigo: string) => boolean
   entrar: (email: string, password: string) => Promise<void>
   salir: () => void
   refrescar: () => Promise<void>
@@ -42,6 +44,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       yo,
       esAdmin: yo?.perfil === 'ADMINISTRADOR',
       gestor: !!yo && esGestor(yo.perfil),
+      puede: (codigo: string) => yo?.perfil === 'ADMINISTRADOR' || !!yo?.features.some((f) => f.codigo === codigo),
       entrar,
       salir,
       refrescar,

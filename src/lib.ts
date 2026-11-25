@@ -67,3 +67,37 @@ export function useCarga<T>(fn: () => Promise<T>, deps: unknown[]) {
   }, [...deps, version])
   return { datos, error, recargar: () => setVersion((v) => v + 1), setDatos }
 }
+
+/* ------------------------- Fechas locales y dinero ------------------------- */
+// La agenda y las finanzas usan fechas YYYY-MM-DD sin zona horaria: se arman con los
+// componentes locales para que un día no se corra al convertir a UTC.
+
+export const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+export const DIAS_CORTOS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+
+const dos = (n: number) => String(n).padStart(2, '0')
+export const isoDia = (d: Date) => `${d.getFullYear()}-${dos(d.getMonth() + 1)}-${dos(d.getDate())}`
+export const leerDia = (iso: string) => {
+  const [a, m, d] = iso.split('-').map(Number)
+  return new Date(a, m - 1, d)
+}
+export const hoyIso = () => isoDia(new Date())
+export const sumarDias = (iso: string, n: number) => {
+  const d = leerDia(iso)
+  d.setDate(d.getDate() + n)
+  return isoDia(d)
+}
+/** Lunes de la semana del día dado. */
+export const lunes = (iso: string) => sumarDias(iso, -((leerDia(iso).getDay() + 6) % 7))
+export const diaLargo = (iso: string) => leerDia(iso).toLocaleDateString('es-EC', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+export const diaCorto = (iso: string | null | undefined) => (iso ? leerDia(iso).toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' }) : '—')
+
+/** "HH:MM" → minutos desde la medianoche. */
+export const minutos = (h: string) => {
+  const [hh, mm] = h.split(':').map(Number)
+  return hh * 60 + mm
+}
+export const hora = (min: number) => `${dos(Math.floor(min / 60))}:${dos(min % 60)}`
+
+const fmtDinero = new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD' })
+export const dinero = (n: number) => fmtDinero.format(n)
