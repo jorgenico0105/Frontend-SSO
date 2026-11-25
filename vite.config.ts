@@ -7,7 +7,8 @@ import { defineConfig } from 'vite'
 const API = process.env.VITE_PROXY_API ?? 'http://localhost:3000'
 
 export default defineConfig({
-  base: '/panel/',
+  // En Vercel la app vive en la raíz; en el servidor propio, bajo /panel (Caddy).
+  base: process.env.VERCEL ? '/' : '/panel/',
   plugins: [react(), tailwindcss()],
   server: {
     proxy: Object.fromEntries(['/api', '/terminos', '/privacidad'].map((p) => [p, API])),
