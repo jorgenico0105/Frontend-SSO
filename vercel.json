@@ -1,3 +1,8 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://46-62-237-106.sslip.io/api/:path*" },
+    { "source": "/terminos", "destination": "https://46-62-237-106.sslip.io/terminos" },
+    { "source": "/privacidad", "destination": "https://46-62-237-106.sslip.io/privacidad" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
